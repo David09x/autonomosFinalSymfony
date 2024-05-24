@@ -9,7 +9,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UsuariosRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_ID_USUARIO', fields: ['idUsuario'])]
-#[ORM\Table(name: "cliente")]
+#[ORM\Table(name: "usuarios")]
 class Usuarios implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]

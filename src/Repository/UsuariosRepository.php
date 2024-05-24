@@ -8,15 +8,19 @@ use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /**
  * @extends ServiceEntityRepository<Usuarios>
  */
 class UsuariosRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
 {
-    public function __construct(ManagerRegistry $registry)
+    private $passwordHasher;
+
+    public function __construct(ManagerRegistry $registry, UserPasswordHasherInterface $passwordHasher)
     {
         parent::__construct($registry, Usuarios::class);
+        $this->passwordHasher = $passwordHasher;
     }
 
     /**
@@ -33,52 +37,47 @@ class UsuariosRepository extends ServiceEntityRepository implements PasswordUpgr
         $this->getEntityManager()->flush();
     }
 
-    //    /**
-    //     * @return Usuarios[] Returns an array of Usuarios objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('u.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?Usuarios
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
-
-    public function buscarUsuario($idUsuario,$password){
-        $data = array();
+    public function insertarUsuario($idUsuario, $password, $nombreApellido,$token,$roles)
+    {
         $connection = $this->getEntityManager()->getConnection();
-        try {
-            $body = "SELECT token 
-            FROM usuarios 
-            WHERE idUsuario = :idUsuario AND password = :password;";
-            $parameters = ['idUsuario' => $idUsuario, 'password' => $password];
 
+        try {
+            $hashedPassword = $this->passwordHasher->hashPassword(new Usuarios(), $password);    
+            $body = "INSERT INTO usuarios (idUsuario, password, nombreApellido, roles, token)
+                VALUES (:idUsuario, :password, :nombreApellido, :roles, :token)";
+            $parameters = ['idUsuario' => $idUsuario,'password' => $hashedPassword,'nombreApellido' => $nombreApellido,'roles' => $roles,'token' => $token];
+    
             $statement = $connection->executeQuery($body,$parameters);
             $results = $statement->fetchAll();
-
-            $data =  $results;
-           
-
-        }catch(\Exception $e){
-            $data = array('estado' => 'danger', 'mensaje' => $e->getMessage());
+            
+            $data = $results;
+        } catch (\Exception $e) {
+            $data = ['estado' => 'danger'. $e->getMessage()];
         }
+    
         return $data;
     }
 
-    
+    public function obtenerToken($idUsuario, $password)
+    {
+    $connection = $this->getEntityManager()->getConnection();
+
+    try {
+        $body = "SELECT token, password FROM usuarios WHERE idUsuario = :idUsuario";
+        $parameters = ['idUsuario' => $idUsuario];
+        $statement = $connection->executeQuery($body, $parameters);
+        $result = $statement->fetchAssociative(); 
+        $data =  $result;
+          
+    } catch (\Exception $e) {
+        $data = ['estado' => 'danger'. $e->getMessage()];
+    }
+    return $data;
+    }
+
 
 }
+
+    
+
+

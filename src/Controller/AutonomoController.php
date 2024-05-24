@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Doctrine\Persistence\ManagerRegistry;
@@ -14,9 +15,16 @@ use App\Entity\Cliente;
 use App\Entity\Servicios;
 use App\Entity\Citas;
 use App\Entity\Usuarios;
+use App\Repository\UsuariosRepository;
 
 class AutonomoController extends AbstractController
 {
+    private $usuariosRepository;
+
+    public function __construct(UsuariosRepository $usuariosRepository)
+    {
+        $this->usuariosRepository = $usuariosRepository;
+    }
     //#[Route('/restaurant', name: 'app_restaurant')]
     /*public function index(): JsonResponse
     {
@@ -86,7 +94,7 @@ class AutonomoController extends AbstractController
 
                 $response = [
                 'ok' => true,
-                'descripcion' => 'Usuario agregado con exito'
+                'descripcion' => 'Cliente agregado con exito'
                 ];
             }else{
                 $response = [
@@ -96,7 +104,7 @@ class AutonomoController extends AbstractController
         }else{
             $response = [
                 'ok' => false,
-                'descripcion' => 'Estas intentando agregar un usuario que tiene el mismo numero de telefono que otro usuario'
+                'descripcion' => 'Estas intentando agregar un cliente que tiene el mismo numero de telefono que otro cliente'
             ];
         }
         
@@ -127,7 +135,7 @@ class AutonomoController extends AbstractController
         }else{
             $response = [
                 'ok' => false,
-                'descripcion' => 'Estas intentando agregar un usuario que tiene el mismo numero de telefono que otro usuario'
+                'descripcion' => 'Estas intentando agregar un proveedor que tiene el mismo numero de telefono que otro proveedor'
             ];
         }
 
@@ -406,7 +414,7 @@ class AutonomoController extends AbstractController
     }
 
     #[Route('/crearToken', name: 'crear-token')]
-    public function crearToken(ManagerRegistry  $doctrine): JsonResponse{
+    public function crearToken(): string{
         $caracteres = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
         'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
         '@', '#', '?', '¿', '!', '¡'];
@@ -420,35 +428,51 @@ class AutonomoController extends AbstractController
         $token .= $caracteres[$indice];
         }
 
-        return new JsonResponse(['token' => $token]);
+        return $token;
 
     }
 
-    
+
+#[Route('/crearUsuario', name: 'crear_usuario')]
+    public function crearUsuario(): Response
+    {
+        $idUsuario = '5';
+        $password = '1234';
+        $nombreApellido = 'prueba5';
+        $token = $this->crearToken();
+        $roles = json_encode(['ROLE_USER']);
+        
+        $this->usuariosRepository->insertarUsuario($idUsuario, $password, $nombreApellido,$token,$roles);
+
+        return new Response('Usuario creado con éxito.');
+    }
+
     #[Route('/buscar-usuario', name: 'buscar-usuario', methods: ['POST'])]
-public function buscarUsuario(Request $request,ManagerRegistry $doctrine): JsonResponse
-{
-
-    $content = $request->getContent();
-    $data = json_decode($content, true);
-    $idUsuario = $data['idUsuario'];
-    $password = $data['password'];
-    $usuario = $doctrine->getRepository(Usuarios::class)->buscarUsuario($idUsuario, $password);
-
-    if($usuario){
-        $response = [
-          
-            'token' => $usuario[0]['token']
-        ];
-    }else{
-        $response = [
-          
-            'descripcion' => "credenciales inválidas"
-        ];
+    public function obtenerToken(Request $request): JsonResponse
+    {
+        $datos = json_decode($request->getContent(), true);
+    
+        $usuario = $this->usuariosRepository->obtenerToken($datos['idUsuario'], $datos['password']);
+        if ($usuario) {
+            $hashedPassword = $usuario['password'];
+            if (password_verify($datos['password'], $hashedPassword)) {
+                $response = [
+                    'token' => $usuario["token"]
+                ];
+            } else {
+                $response = [
+                    'error' => 'Credenciales inválidas'
+                ];
+            }
+        } else {
+            $response = [
+                'error' => 'Credenciales inválidas'
+            ];
+        }
+    
+        return new JsonResponse($response);
     }
-
-    return new JsonResponse($response);
-}
+    
 
 
 }
