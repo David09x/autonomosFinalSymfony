@@ -434,7 +434,7 @@ class AutonomoController extends AbstractController
 
 
 #[Route('/crearUsuario', name: 'crear_usuario')]
-    public function crearUsuario(): Response
+    public function crearUsuario(ManagerRegistry $doctrine): Response
     {
         $idUsuario = '5';
         $password = '1234';
@@ -442,17 +442,17 @@ class AutonomoController extends AbstractController
         $token = $this->crearToken();
         $roles = json_encode(['ROLE_USER']);
         
-        $this->usuariosRepository->insertarUsuario($idUsuario, $password, $nombreApellido,$token,$roles);
+        $doctrine->getRepository(Usuarios::class)->insertarUsuario($idUsuario, $password, $nombreApellido,$token,$roles);
 
         return new Response('Usuario creado con éxito.');
     }
 
     #[Route('/buscar-usuario', name: 'buscar-usuario', methods: ['POST'])]
-    public function obtenerToken(Request $request): JsonResponse
+    public function obtenerToken(Request $request,ManagerRegistry $doctrine): JsonResponse
     {
         $datos = json_decode($request->getContent(), true);
     
-        $usuario = $this->usuariosRepository->obtenerToken($datos['idUsuario'], $datos['password']);
+        $usuario = $doctrine->getRepository(Usuarios::class)->obtenerToken($datos['idUsuario'], $datos['password']);
         if ($usuario) {
             $hashedPassword = $usuario['password'];
             if (password_verify($datos['password'], $hashedPassword)) {
