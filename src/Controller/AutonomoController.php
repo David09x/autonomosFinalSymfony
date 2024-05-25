@@ -15,6 +15,7 @@ use App\Entity\Cliente;
 use App\Entity\Servicios;
 use App\Entity\Citas;
 use App\Entity\Usuarios;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use App\Repository\UsuariosRepository;
 
 class AutonomoController extends AbstractController
@@ -434,16 +435,16 @@ class AutonomoController extends AbstractController
 
 
 #[Route('/crearUsuario', name: 'crear_usuario')]
-    public function crearUsuario(ManagerRegistry $doctrine): Response
+    public function crearUsuario(ManagerRegistry $doctrine,UserPasswordHasherInterface $passwordHasher): Response
     {
-        $idUsuario = '5';
+        $idUsuario = '13';
         $password = '1234';
-        $nombreApellido = 'prueba5';
+        $nombreApellido = 'prueba2';
         $token = $this->crearToken();
         $roles = json_encode(['ROLE_USER']);
         
-        $doctrine->getRepository(Usuarios::class)->insertarUsuario($idUsuario, $password, $nombreApellido,$token,$roles);
-
+        $hashedPassword = $passwordHasher->hashPassword(new Usuarios(), $password);  
+        $doctrine->getRepository(Usuarios::class)->insertarUsuario($idUsuario, $hashedPassword, $nombreApellido,$token,$roles);
         return new Response('Usuario creado con éxito.');
     }
 

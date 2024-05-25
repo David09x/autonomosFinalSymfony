@@ -15,12 +15,12 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
  */
 class UsuariosRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
 {
-    private $passwordHasher;
+    private $contraseñaHaseada;
 
     public function __construct(ManagerRegistry $registry, UserPasswordHasherInterface $passwordHasher)
     {
         parent::__construct($registry, Usuarios::class);
-        $this->passwordHasher = $passwordHasher;
+        $this->contraseñaHaseada = $passwordHasher;
     }
 
     /**
@@ -41,11 +41,10 @@ class UsuariosRepository extends ServiceEntityRepository implements PasswordUpgr
     {
         $connection = $this->getEntityManager()->getConnection();
 
-        try {
-            $hashedPassword = $this->passwordHasher->hashPassword(new Usuarios(), $password);    
+        try {   
             $body = "INSERT INTO usuarios (idUsuario, password, nombreApellido, roles, token)
                 VALUES (:idUsuario, :password, :nombreApellido, :roles, :token)";
-            $parameters = ['idUsuario' => $idUsuario,'password' => $hashedPassword,'nombreApellido' => $nombreApellido,'roles' => $roles,'token' => $token];
+            $parameters = ['idUsuario' => $idUsuario,'password' => $password,'nombreApellido' => $nombreApellido,'roles' => $roles,'token' => $token];
     
             $statement = $connection->executeQuery($body,$parameters);
             $results = $statement->fetchAll();
