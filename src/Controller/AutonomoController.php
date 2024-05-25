@@ -461,12 +461,12 @@ class AutonomoController extends AbstractController
                 ];
             } else {
                 $response = [
-                    'error' => 'Credenciales inválidas'
+                    'descripcion' => 'Credenciales inválidas'
                 ];
             }
         } else {
             $response = [
-                'error' => 'Credenciales inválidas'
+                'descripcion' => 'Credenciales inválidas'
             ];
         }
     
