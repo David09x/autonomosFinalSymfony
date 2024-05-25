@@ -112,7 +112,7 @@ class CitasRepository extends ServiceEntityRepository
         $connection = $this->getEntityManager()->getConnection();
         try {
             $body = "SELECT cliente.nombre, citas.hora , servicios.tipo , servicios.precio ,citas.fecha FROM citas INNER JOIN cliente ON cliente.id = citas.idCliente INNER JOIN servicios 
-            ON servicios.id = citas.idServicio WHERE fecha BETWEEN :fecha AND :fecha2  ORDER BY CONCAT(citas.fecha, ' ', citas.hora) ASC";
+            ON servicios.id = citas.idServicio WHERE fecha BETWEEN :fecha AND :fecha2  ORDER BY citas.fecha ASC, citas.hora ASC";
             $parameters = ['fecha' => $fecha , 'fecha2' => $fecha2];
 
             $statement = $connection->executeQuery($body,$parameters);
