@@ -418,9 +418,9 @@ class AutonomoController extends AbstractController
 
 
 #[Route('/crearUsuario', name: 'crear_usuario')]
-    public function crearUsuario(ManagerRegistry $doctrine,UserPasswordHasherInterface $passwordHasher): Response
+    public function crearUsuario(ManagerRegistry $doctrine,UserPasswordHasherInterface $passwordHasher): JsonResponse
     {
-        $idUsuario = '13';
+        $idUsuario = '2';
         $password = '1234';
         $nombreApellido = 'prueba2';
         $token = $this->crearToken();
@@ -428,7 +428,7 @@ class AutonomoController extends AbstractController
         
         $hashedPassword = $passwordHasher->hashPassword(new Usuarios(), $password);  
         $doctrine->getRepository(Usuarios::class)->insertarUsuario($idUsuario, $hashedPassword, $nombreApellido,$token,$roles);
-        return new Response('Usuario creado con éxito.');
+        return new JsonResponse('Usuario creado con éxito.');
     }
 
     #[Route('/buscar-usuario', name: 'buscar-usuario')]
