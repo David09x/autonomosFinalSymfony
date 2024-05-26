@@ -26,14 +26,6 @@ class AutonomoController extends AbstractController
     {
         $this->usuariosRepository = $usuariosRepository;
     }
-    //#[Route('/restaurant', name: 'app_restaurant')]
-    /*public function index(): JsonResponse
-    {
-        return $this->json([
-            'message' => 'Welcome to your new controller!',
-            'path' => 'src/Controller/RestaurantController.php',
-        ]);
-    }*/
     #[Route('/restaurant', name: 'app_restaurant')]
     public function prueba1(ManagerRegistry $doctrine): JsonResponse
     {
@@ -169,25 +161,16 @@ class AutonomoController extends AbstractController
     public function obtenerFecha($fecha)
     {
         
-        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha)) {
+        $fecha_formateada = str_replace('-', '', $fecha);
             
-            $fecha_formateada = str_replace('-', '', $fecha);
+          
+        $partes_fecha = explode('-', $fecha_formateada);
             
-            // Dividir la fecha en partes
-            $partes_fecha = explode('-', $fecha_formateada);
-            
-            $anyo = substr($partes_fecha[0],0,4);
-            $mes = substr($partes_fecha[0],4,2);
-            $dia = substr($partes_fecha[0],6,2);
+        $anyo = substr($partes_fecha[0],0,4);
+        $mes = substr($partes_fecha[0],4,2);
+        $dia = substr($partes_fecha[0],6,2);
 
-            $fecha_final = $anyo.$mes.$dia;
-           
-            
-            
-        } else {
-            $fecha_final =  false;
-        }
-
+        $fecha_final = $anyo.$mes.$dia;
         $response = [
             'fecha' => $fecha_final
         ];
@@ -448,7 +431,7 @@ class AutonomoController extends AbstractController
         return new Response('Usuario creado con éxito.');
     }
 
-    #[Route('/buscar-usuario', name: 'buscar-usuario', methods: ['POST'])]
+    #[Route('/buscar-usuario', name: 'buscar-usuario')]
     public function obtenerToken(Request $request,ManagerRegistry $doctrine): JsonResponse
     {
         $datos = json_decode($request->getContent(), true);
